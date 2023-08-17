@@ -5,6 +5,7 @@
 # .env
 .env
 
+video_teste
 # Logs
 logs
 *.log
