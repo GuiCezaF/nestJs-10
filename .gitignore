@@ -6,6 +6,7 @@
 .env
 
 video_teste
+upload/*
 # Logs
 logs
 *.log

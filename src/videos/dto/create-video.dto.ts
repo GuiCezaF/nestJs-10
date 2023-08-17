@@ -16,7 +16,7 @@ export class CreateVideoDto {
 
   @IsString()
   @IsOptional()
-  descripton: string | null;
+  description: string | null;
 
   @Min(1)
   @IsInt()
