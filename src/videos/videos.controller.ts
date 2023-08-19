@@ -9,17 +9,27 @@ import {
   UploadedFile,
   ParseFilePipe,
   UseInterceptors,
+  Res,
 } from '@nestjs/common';
 import { VideosService } from './videos.service';
-import { CreateVideoDto } from './dto/create-video.dto';
+import { CreateVideoDto, CreateVideoWithDoc } from './dto/create-video.dto';
 import { UpdateVideoDto } from './dto/update-video.dto';
 import { VideoFileValidator } from './video-file-validator';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { createReadStream } from 'fs';
+import { join } from 'path';
+import { Response } from 'express';
+import { VideoSerializer } from './video-serializer';
+import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 
 @Controller('api/v1/videos')
 export class VideosController {
   constructor(private readonly videosService: VideosService) {}
 
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    type: CreateVideoWithDoc,
+  })
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   create(
@@ -45,8 +55,9 @@ export class VideosController {
   }
 
   @Get()
-  findAll() {
-    return this.videosService.findAll();
+  async findAll() {
+    const videos = await this.videosService.findAll();
+    return videos.map((video) => new VideoSerializer(video));
   }
 
   @Get(':id')
@@ -62,5 +73,11 @@ export class VideosController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.videosService.remove(+id);
+  }
+
+  @Get('file/:file')
+  file(@Param('file') file: string, @Res() res: Response) {
+    const fileStream = createReadStream(join(process.cwd(), 'upload', file));
+    fileStream.pipe(res);
   }
 }
